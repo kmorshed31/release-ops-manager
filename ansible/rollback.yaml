@@ -1,0 +1,24 @@
+- hosts: release_server
+  become: yes
+  vars:
+    dest: /opt/releaseops
+    service_name: releaseops
+
+  tasks:
+    - name: Find previous jars
+      shell: ls -1tr /opt/releaseops | grep releaseops | tail -n 2 || true
+      register: jars
+      ignore_errors: yes
+
+    - name: Fail if no previous jar
+      fail:
+        msg: "No previous jar found to rollback to"
+      when: jars.stdout_lines | length < 2
+
+    - name: Copy previous jar into place
+      shell: |
+        prev=$(ls -1tr /opt/releaseops | grep releaseops | tail -n 2 | head -n1)
+        cp /opt/releaseops/$prev /opt/releaseops/releaseops.jar
+
+    - name: Restart service
+      shell: systemctl restart {{ service_name }}

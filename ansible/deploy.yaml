@@ -1,0 +1,62 @@
+- hosts: release_server
+  become: yes
+  vars:
+    repo: https://github.com/your/releaseops.git
+    dest: /opt/releaseops
+    service_name: releaseops
+
+  tasks:
+    - name: Ensure dest directory exists
+      file:
+        path: "{{ dest }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Pull latest code
+      git:
+        repo: "{{ repo }}"
+        dest: "{{ dest }}"
+        update: yes
+
+    - name: Build with Maven
+      shell: mvn -f {{ dest }}/backend clean package -DskipTests
+      args:
+        chdir: "{{ dest }}"
+
+    - name: Stop old service (if exists)
+      shell: systemctl stop {{ service_name }} || true
+
+    - name: Copy new jar
+      copy:
+        src: "{{ dest }}/backend/target/releaseops-0.0.1-SNAPSHOT.jar"
+        dest: "/opt/releaseops/releaseops.jar"
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Ensure systemd service file
+      copy:
+        dest: /etc/systemd/system/{{ service_name }}.service
+        content: |
+          [Unit]
+          Description=ReleaseOps Service
+          After=network.target
+
+          [Service]
+          ExecStart=/usr/bin/java -jar /opt/releaseops/releaseops.jar
+          Restart=on-failure
+          User=root
+
+          [Install]
+          WantedBy=multi-user.target
+      notify:
+        - daemon-reload
+
+    - name: Start service
+      shell: systemctl enable --now {{ service_name }}
+
+  handlers:
+    - name: daemon-reload
+      shell: systemctl daemon-reload

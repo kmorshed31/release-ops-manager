@@ -1,0 +1,84 @@
+<!doctype html>
+<html ng-app="releaseOpsApp">
+<head>
+  <meta charset="utf-8">
+  <title>ReleaseOps Manager</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body ng-controller="MainCtrl as vm">
+  <div class="container">
+    <h1>ReleaseOps Manager</h1>
+
+    <div class="login">
+      <label>Username: <input ng-model="vm.username"></label>
+      <label>Password: <input type="password" ng-model="vm.password"></label>
+      <button ng-click="vm.login()">Login (mock)</button>
+    </div>
+
+    <hr>
+
+    <div class="actions">
+      <button ng-click="vm.newRelease = !vm.newRelease">New Release</button>
+    </div>
+
+    <div class="new" ng-show="vm.newRelease">
+      <h3>Create Release</h3>
+      <form ng-submit="vm.create()">
+        <input placeholder="Title" ng-model="vm.form.title" required>
+        <input placeholder="Assigned Engineer" ng-model="vm.form.assignedEngineer">
+        <textarea placeholder="Description" ng-model="vm.form.description"></textarea>
+        <select ng-model="vm.form.status">
+          <option>Open</option>
+          <option>In Progress</option>
+          <option>Released</option>
+        </select>
+        <button type="submit">Create</button>
+      </form>
+    </div>
+
+    <h2>Releases</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Title</th>
+          <th>Status</th>
+          <th>Assigned</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="r in vm.releases">
+          <td>{{r.id}}</td>
+          <td>{{r.title}}</td>
+          <td>{{r.status}}</td>
+          <td>{{r.assignedEngineer}}</td>
+          <td>
+            <button ng-click="vm.edit(r)">Edit</button>
+            <button ng-click="vm.delete(r.id)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="edit" ng-if="vm.editing">
+      <h3>Edit Release</h3>
+      <form ng-submit="vm.update()">
+        <input ng-model="vm.editing.title" required>
+        <input ng-model="vm.editing.assignedEngineer">
+        <textarea ng-model="vm.editing.description"></textarea>
+        <select ng-model="vm.editing.status">
+          <option>Open</option>
+          <option>In Progress</option>
+          <option>Released</option>
+        </select>
+        <button type="submit">Save</button>
+        <button type="button" ng-click="vm.cancelEdit()">Cancel</button>
+      </form>
+    </div>
+
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

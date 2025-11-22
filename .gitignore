@@ -1,0 +1,10 @@
+target/
+*.log
+*.jar
+/.idea
+/.mvn/
+node_modules/
+backups/
+*.iml
+*.class
+/.vscode
